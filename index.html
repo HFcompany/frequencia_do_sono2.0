@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Frequência do Sono</title>
+</head>
+<body style="text-align:center; font-family:Arial; margin-top:100px;">
+
+<h1>🌙 Frequência Relaxante</h1>
+<p>Toque no botão para iniciar</p>
+
+<button onclick="tocarSom()" style="padding:15px 30px; font-size:18px;">
+Iniciar Frequência
+</button>
+
+<script>
+let audioContext;
+
+function tocarSom() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(432, audioContext.currentTime); // Frequência relaxante
+
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Volume baixo
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+}
+</script>
+
+</body>
+</html>
