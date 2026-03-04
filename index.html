@@ -62,9 +62,6 @@ button, select, input {
 </div>
 
 <script>
-// =====================
-// CONTROLE DE ÁUDIO
-// =====================
 const player = document.getElementById("player");
 const select = document.getElementById("audioSelect");
 const volumeControl = document.getElementById("volume");
@@ -83,9 +80,7 @@ volumeControl.addEventListener("input", function(){
     player.volume = this.value;
 });
 
-// =====================
-// FUNDO ESTRELAS
-// =====================
+// Fundo estrelas
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
