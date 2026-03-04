@@ -2,38 +2,126 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Frequência do Sono</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modo Relaxamento</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    margin-top: 20vh;
+}
+
+button, select, input {
+    padding: 10px;
+    margin: 10px;
+    font-size: 16px;
+}
+</style>
 </head>
-<body style="text-align:center; font-family:Arial; margin-top:100px;">
 
-<h1>🌙 Frequência Relaxante</h1>
-<p>Toque no botão para iniciar</p>
+<body>
 
-<button onclick="tocarSom()" style="padding:15px 30px; font-size:18px;">
-Iniciar Frequência
-</button>
+<canvas id="stars"></canvas>
+
+<div class="container">
+    <h1>🌙 Modo Relaxamento</h1>
+
+    <select id="audioSelect">
+        <option value="chuva.mp3">🌧️ Chuva</option>
+        <option value="mar.mp3">🌊 Mar</option>
+        <option value="ruido.mp3">🌌 Ruído Branco</option>
+    </select>
+
+    <br>
+
+    <button onclick="tocar()">Iniciar</button>
+    <button onclick="parar()">Parar</button>
+
+    <br>
+
+    🎧 Volume:
+    <input type="range" min="0" max="1" step="0.01" value="0.5" id="volume">
+
+    <audio id="player" loop></audio>
+</div>
 
 <script>
-let audioContext;
+// =====================
+// CONTROLE DE ÁUDIO
+// =====================
+const player = document.getElementById("player");
+const select = document.getElementById("audioSelect");
+const volumeControl = document.getElementById("volume");
 
-function tocarSom() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(432, audioContext.currentTime); // Frequência relaxante
-
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Volume baixo
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.start();
+function tocar(){
+    player.src = select.value;
+    player.volume = volumeControl.value;
+    player.play();
 }
+
+function parar(){
+    player.pause();
+}
+
+volumeControl.addEventListener("input", function(){
+    player.volume = this.value;
+});
+
+// =====================
+// FUNDO ESTRELAS
+// =====================
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stars = [];
+
+for (let i = 0; i < 150; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2,
+        speed: Math.random() * 0.5
+    });
+}
+
+function drawStars(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "white";
+
+    stars.forEach(star => {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI*2);
+        ctx.fill();
+
+        star.y += star.speed;
+        if(star.y > canvas.height){
+            star.y = 0;
+        }
+    });
+
+    requestAnimationFrame(drawStars);
+}
+
+drawStars();
 </script>
 
 </body>
