@@ -3,34 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modo Relaxamento</title>
+<title>Modo Meditação</title>
 
 <style>
 body {
     margin: 0;
+    background: radial-gradient(circle at bottom, #0b1d3a, #000814);
     overflow: hidden;
-    background: black;
-    color: white;
     font-family: Arial;
+    color: white;
     text-align: center;
-}
-
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
 }
 
 .container {
     position: relative;
     z-index: 2;
-    margin-top: 20vh;
+    margin-top: 25vh;
 }
 
-button, select, input {
-    padding: 10px;
+button, input, select {
+    padding: 12px;
     margin: 10px;
     font-size: 16px;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    background: #1e3a8a;
+    color: white;
+}
+
+button:hover {
+    background: #2563eb;
+}
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 </style>
 </head>
@@ -40,47 +50,80 @@ button, select, input {
 <canvas id="stars"></canvas>
 
 <div class="container">
-    <h1>🌙 Modo Relaxamento</h1>
+    <h1>🌙 Frequência Binaural</h1>
+    <p>Use fones para melhor efeito</p>
 
-    <select id="audioSelect">
-        <option value="chuva.mp3">🌧️ Chuva</option>
-        <option value="mar.mp3">🌊 Mar</option>
-        <option value="ruido.mp3">🌌 Ruído Branco</option>
+    <select id="mode">
+        <option value="4">🌑 Sono Profundo (4Hz)</option>
+        <option value="6">🧘 Meditação (6Hz)</option>
+        <option value="8">🌊 Relaxamento (8Hz)</option>
     </select>
 
     <br>
 
-    <button onclick="tocar()">Iniciar</button>
+    <button onclick="iniciar()">Iniciar</button>
     <button onclick="parar()">Parar</button>
 
     <br>
 
-    🎧 Volume:
-    <input type="range" min="0" max="1" step="0.01" value="0.5" id="volume">
-
-    <audio id="player" loop></audio>
+    🔊 Volume
+    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.2">
 </div>
 
 <script>
-const player = document.getElementById("player");
-const select = document.getElementById("audioSelect");
-const volumeControl = document.getElementById("volume");
+let audioContext;
+let oscillatorL;
+let oscillatorR;
+let gainNode;
 
-function tocar(){
-    player.src = select.value;
-    player.volume = volumeControl.value;
-    player.play();
+function iniciar() {
+
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const baseFreq = 200;
+    const beatFreq = parseFloat(document.getElementById("mode").value);
+
+    oscillatorL = audioContext.createOscillator();
+    oscillatorR = audioContext.createOscillator();
+
+    gainNode = audioContext.createGain();
+
+    oscillatorL.type = "sine";
+    oscillatorR.type = "sine";
+
+    oscillatorL.frequency.value = baseFreq;
+    oscillatorR.frequency.value = baseFreq + beatFreq;
+
+    const splitter = audioContext.createChannelSplitter(2);
+    const merger = audioContext.createChannelMerger(2);
+
+    oscillatorL.connect(gainNode);
+    oscillatorR.connect(gainNode);
+
+    gainNode.connect(merger, 0, 0);
+    gainNode.connect(merger, 0, 1);
+
+    merger.connect(audioContext.destination);
+
+    gainNode.gain.value = document.getElementById("volume").value;
+
+    oscillatorL.start();
+    oscillatorR.start();
 }
 
-function parar(){
-    player.pause();
+function parar() {
+    if (oscillatorL) oscillatorL.stop();
+    if (oscillatorR) oscillatorR.stop();
 }
 
-volumeControl.addEventListener("input", function(){
-    player.volume = this.value;
+document.getElementById("volume").addEventListener("input", function(){
+    if (gainNode) gainNode.gain.value = this.value;
 });
 
-// Fundo estrelas
+
+// Fundo estrelas animado
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
@@ -89,12 +132,12 @@ canvas.height = window.innerHeight;
 
 let stars = [];
 
-for (let i = 0; i < 150; i++) {
+for (let i = 0; i < 200; i++) {
     stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 2,
-        speed: Math.random() * 0.5
+        radius: Math.random() * 1.5,
+        speed: Math.random() * 0.3
     });
 }
 
